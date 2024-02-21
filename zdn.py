@@ -10,7 +10,7 @@ def main(args):
         #get keyword from file
         if args.input:
             #read file
-            print('reading input file '+args.input)
+            print('Reading input file '+args.input)
             keyword = args.input
             #keyword = get_from_input()
         else:
