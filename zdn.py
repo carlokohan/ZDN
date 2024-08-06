@@ -1,4 +1,5 @@
 import argparse
+import errno
 import time
 import traceback
 
@@ -7,8 +8,8 @@ from lib.mailer import Emailer
 from lib.search import Search
 
 def main(args):
-    keywords = ['fortinet', 'splunk', 'microsoft outlook', 'outlook', 'microsoft office', 'servicenow', 'misp', 'fortios', 'forticlient']
-
+    keywords = ['salesforce', 'fortinet', 'splunk', 'microsoft exchange', 'microsoft outlook', 'outlook', 'microsoft office', 'servicenow', 'fortios', 'forticlient']
+    keywords_acronyms = ['aix', 'sap']
     if args.keyword:
         keywords = args.keyword
     else:
@@ -26,24 +27,23 @@ def main(args):
             keywords = 'files/keywords.txt'
         '''
 
-    print("Keywords:")
-    print(keywords)
+    print("Running...")
     zip_obj = Zip_Operations()
     zip_obj.download_cve_file()
     zip_obj.unzip_file()
 
     search_obj = Search()
-    email_data = search_obj.search_keys(keywords)
-    print(email_data)
+    email_data = search_obj.search_keys(keywords, keywords_acronyms, zip_obj.get_year())
 
-    emailer = Emailer()
-    emailer.send(email_data)
+    if email_data:
+        emailer = Emailer(email_data)
+        emailer.send(email_data, search_obj.get_score())
 
     zip_obj.clean_up()
 
 if __name__ == "__main__":
     count = 1
-    while(count < 10):
+    while(count < 9):
         try: 
             parser = argparse.ArgumentParser(description='Search keywords from CVE and ZDI and emails you the findings')
 
@@ -56,6 +56,9 @@ if __name__ == "__main__":
         except Exception as exc:
             print("Error occured.")
             print(traceback.format_exc())
+
+            if hasattr(exc,"errno") and exc.errno == errno.ENOENT:
+                count = 10
 
             print("sleeping for 5 mins...")
             time.sleep(300)
