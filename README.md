@@ -1,4 +1,4 @@
-# ZDN
+# Zero-Day Notifier
 Zero-Day Notifier
 
 To run:
